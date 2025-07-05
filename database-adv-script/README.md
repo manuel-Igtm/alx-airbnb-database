@@ -178,3 +178,65 @@ These queries enhance system functionality by enabling intelligent filtering and
 ---
 
 **Note**: Ensure proper indexing on `property_id` and `user_id` columns to improve performance of subqueries in production systems.
+
+
+# SQL Aggregate and Window Function Queries
+
+This document provides two SQL queries that leverage aggregate and window functions to analyze data in an Airbnb-style backend system.
+
+---
+
+## 1. Total Number of Bookings Made by Each User
+
+### Query:
+
+```sql
+SELECT
+    users.id AS user_id,
+    users.first_name,
+    users.last_name,
+    COUNT(bookings.id) AS total_bookings
+FROM
+    users
+LEFT JOIN
+    bookings ON users.id = bookings.user_id
+GROUP BY
+    users.id, users.first_name, users.last_name
+ORDER BY
+    total_bookings DESC;
+```
+
+### Description:
+
+* Uses the `COUNT()` function to tally how many bookings each user has made.
+* `LEFT JOIN` ensures users with 0 bookings are included.
+* Grouped by user ID and name to get distinct users.
+* Sorted in descending order of bookings.
+
+---
+
+## 2. Ranking Properties Based on Total Number of Bookings
+
+### Query:
+
+```sql
+SELECT
+    property_id,
+    COUNT(*) AS total_bookings,
+    RANK() OVER (ORDER BY COUNT(*) DESC) AS rank_by_bookings
+FROM
+    bookings
+GROUP BY
+    property_id;
+```
+
+### Description:
+
+* Groups all bookings by `property_id`.
+* Counts total bookings for each property.
+* Uses `RANK()` window function to assign a rank based on the booking count.
+* Highest booked property gets rank 1.
+
+---
+
+These queries are useful for understanding user engagement and property popularity in the Airbnb clone backend system.
