@@ -99,3 +99,82 @@ FULL OUTER JOIN
 | FULL OUTER JOIN | All rows from both tables, matched/unmatched |
 
 These queries are essential for backend operations like generating reports, validating data, and ensuring relationships between users, bookings, and properties are maintained properly.
+
+
+# README.md - Advanced SQL Queries (Subqueries)
+
+This documentation provides explanations and SQL examples for two advanced query types used within the Airbnb-style relational database: a subquery for filtering properties by rating, and a correlated subquery for identifying users with frequent bookings.
+
+---
+
+## 1. Subquery: Properties with Average Rating Greater Than 4.0
+
+### Query:
+
+```sql
+SELECT *
+FROM properties
+WHERE id IN (
+    SELECT property_id
+    FROM reviews
+    GROUP BY property_id
+    HAVING AVG(rating) > 4.0
+);
+```
+
+### Description:
+
+* **Objective**: Retrieve all property records where the average review rating is greater than 4.0.
+* **How it works**:
+
+  * The subquery:
+
+    * Groups the `reviews` table by `property_id`.
+    * Calculates the average rating for each property.
+    * Filters only those with `AVG(rating) > 4.0`.
+  * The outer query selects properties whose `id` is present in the filtered result set from the subquery.
+* **Use Case**: This is useful when listing only top-rated properties on the platform.
+
+---
+
+## 2. Correlated Subquery: Users with More Than 3 Bookings
+
+### Query:
+
+```sql
+SELECT *
+FROM users u
+WHERE (
+    SELECT COUNT(*)
+    FROM bookings b
+    WHERE b.user_id = u.id
+) > 3;
+```
+
+### Description:
+
+* **Objective**: Retrieve all users who have made more than three bookings.
+* **How it works**:
+
+  * The subquery:
+
+    * Is evaluated for each user (`u`) from the `users` table.
+    * Counts the number of rows in `bookings` where `bookings.user_id = users.id`.
+    * Returns the count.
+  * The outer query selects those users where the count is greater than 3.
+* **Use Case**: This helps identify highly active users, which is useful for loyalty programs or advanced analytics.
+
+---
+
+## Summary Table:
+
+| Query Type          | Purpose                             | Output Focus          |
+| ------------------- | ----------------------------------- | --------------------- |
+| Subquery            | Filter properties by average rating | High-rated properties |
+| Correlated Subquery | Count user bookings per user ID     | Frequent users        |
+
+These queries enhance system functionality by enabling intelligent filtering and personalized experiences.
+
+---
+
+**Note**: Ensure proper indexing on `property_id` and `user_id` columns to improve performance of subqueries in production systems.
